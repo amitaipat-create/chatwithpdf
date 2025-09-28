@@ -4,10 +4,9 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings, OpenAI
 from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQA
-import os
 
 st.set_page_config(page_title="PDF Q&A with GPT", layout="wide")
-st.title("📄 Chat with Your PDF using GPT + FAISS")
+st.title("📄 Chat with Your PDFs using GPT + FAISS")
 
 # Check for OpenAI API key
 if "openai_api_key" not in st.secrets.get("general", {}):
@@ -15,6 +14,10 @@ if "openai_api_key" not in st.secrets.get("general", {}):
     st.stop()
 
 openai_api_key = st.secrets["general"]["openai_api_key"]
+
+# Initialize vectorstore in session_state if not present
+if "vectorstore" not in st.session_state:
+    st.session_state.vectorstore = None
 
 uploaded_file = st.file_uploader("Upload your PDF", type="pdf")
 
@@ -41,26 +44,32 @@ if uploaded_file and openai_api_key:
             text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=50)
             texts = text_splitter.split_text(raw_text)
 
-        # Check if we got any text chunks
         if not texts:
             st.error("Could not split the text into chunks. The PDF might be too short or contain unreadable text.")
             st.stop()
 
         st.success(f"Split text into {len(texts)} chunks")
 
-        # Embed and store in FAISS
-        with st.spinner("Creating embeddings and vector store..."):
+        # Create embeddings
+        with st.spinner("Creating embeddings..."):
             embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-            vectorstore = FAISS.from_texts(texts, embeddings)
 
-        st.success("Vector store created successfully!")
+            if st.session_state.vectorstore is None:
+                # First upload — create new vectorstore
+                st.session_state.vectorstore = FAISS.from_texts(texts, embeddings)
+            else:
+                # Additional upload — add to existing vectorstore
+                st.session_state.vectorstore.add_texts(texts)
+
+        st.success("PDF added to knowledge base successfully!")
 
         # Build QA chain
         llm = OpenAI(openai_api_key=openai_api_key)
-        qa = RetrievalQA.from_chain_type(llm=llm, retriever=vectorstore.as_retriever())
+        retriever = st.session_state.vectorstore.as_retriever()
+        qa = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
 
         # User query
-        query = st.text_input("Ask something about your PDF:")
+        query = st.text_input("Ask something about your uploaded PDFs:")
         if query:
             with st.spinner("Thinking..."):
                 try:

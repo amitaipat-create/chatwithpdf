@@ -1,9 +1,10 @@
 import streamlit as st
 from PyPDF2 import PdfReader
-from langchain.text_splitter import CharacterTextSplitter
+#from langchain.text_splitter import CharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings, OpenAI
 from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQA
+from langchain_text_splitters import CharacterTextSplitter
 
 st.set_page_config(page_title="PDF Q&A with GPT", layout="wide")
 st.title("📄 Chat with Your PDFs using GPT + FAISS")
@@ -85,3 +86,4 @@ if uploaded_file and openai_api_key:
 
 else:
     st.info("Please upload a PDF file to get started!")
+

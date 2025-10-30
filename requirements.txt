@@ -3,5 +3,7 @@ openai
 langchain>=0.1.14
 langchain-community
 langchain-openai
+langchain-text-splitters
 PyPDF2
+
 faiss-cpu

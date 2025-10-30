@@ -5,5 +5,4 @@ langchain-community
 langchain-openai
 langchain-text-splitters
 PyPDF2
-
 faiss-cpu

@@ -6,3 +6,13 @@ langchain-openai
 langchain-text-splitters
 PyPDF2
 faiss-cpu
+streamlit==1.30.0
+langchain==0.1.15
+openai==1.16.2
+faiss-cpu==1.8.0
+PyPDF2==3.0.1
+speechrecognition==3.8.1
+pyttsx3==2.90
+pyaudio==0.2.13  # For microphone input on many platforms
+
+
